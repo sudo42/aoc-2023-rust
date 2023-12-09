@@ -1,33 +1,10 @@
-use std::env;
-use std::io::{stdin, BufRead, BufReader};
-use std::fs::File;
-
-
-/*
-eight
-five
-four
-nine
-one
-seven
-six
-three
-two
-*/
+mod common;
+use crate::common::{*, debug_only as dbg};
 
 const ASCII_ZERO: u32 = '0' as u32;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let path = match &args[..] {
-        [] | [_]    => None,
-        [_, path]   => if path == "-" { None } else { Some(path) },
-        _           => panic!("eeek! too many args … qq"),
-    };
-    let reader : Box<dyn BufRead> = match path {
-        None        => Box::new(BufReader::new(stdin().lock())),
-        Some(path)  => Box::new(BufReader::new(File::open(path).unwrap())),
-    };
+    let reader = default_input_reader();
     let sum = reader.lines().map(|line| {
         let line = line.unwrap();
 
@@ -38,7 +15,6 @@ fn main() {
         while !slice.is_empty() {
             let c0 = slice.chars().next().unwrap();
             slice = &slice[1..];
-            //let c0 = slice.chars().next().unwrap();
             let num = match c0 {
                 c0 if c0.is_ascii_digit() => Some((c0 as u32) - ASCII_ZERO),
                 'o' if slice.starts_with("ne")     => { slice = &slice[2..]; Some(1) },
@@ -61,7 +37,7 @@ fn main() {
             (Some(first), Some(last)) => first * 10 + last,
             (_,_) => 0, //panic!("not enough numbers in that line: {}", line),
         };
-        eprintln!("-> {:?} {:?} -> {} for line: {}", first, last, line_num, line);
+        dbg!(eprintln!("-> {:?} {:?} -> {} for line: {}", first, last, line_num, line));
         line_num
     }).fold(0u64, |accumulator, entry| accumulator + entry);
     eprint!("\ncalibration value: ");
